@@ -1,0 +1,170 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#houses {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+}
+
+.house {
+    width: 120px;
+    height: 180px;
+    border: 2px solid black;
+    margin: 5px;
+    padding: 5px;
+    background-color: lightgray;
+}
+
+.clues-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 20px auto;
+    max-width: 900px;
+    text-align: left;
+}
+
+.clues-column {
+    flex: 1;
+}
+
+.clues-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* two equal-width columns */
+    gap: 8px 40px; /* row gap, column gap */
+    max-width: 1200px;
+    margin: 20px auto;
+    text-align: left;
+    align-items: center;
+
+    position: relative;
+    left: 70px; /* shift everything left (adjust value as needed) */
+}
+
+
+/* default look */
+.clue {
+    white-space: nowrap;   /* prevent line breaks */
+    line-height: 1.5em;
+}
+
+/* manual click highlight (notes) */
+.clue.highlight { color: purple; font-weight: bold; }
+
+/* satisfied always wins */
+.clue.satisfied {
+  color: #777;
+  text-decoration: line-through;
+  font-weight: normal; /* ensure bold is removed */
+}
+
+/* conflict look */
+.clue.conflict {
+  color: #c00;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+
+.marker {
+    display: inline-block;
+    width: 1.5em;         /* reserve space for markers */
+    text-align: center;
+    font-weight: bold;
+}
+
+/* satisfied vs conflict */
+.satisfied {
+    color: gray;
+    text-decoration: line-through;
+}
+
+.conflict {
+    color: red;
+}
+
+.houses-grid {
+    display: grid;
+    grid-template-columns: 120px repeat(5, 1fr); /* 1 label col + 5 house cols */
+    gap: 6px 12px; /* row-gap col-gap */
+    margin: 20px auto;
+    max-width: 800px;
+    align-items: center;
+
+    position: relative;
+    left: -30px; /* shift everything left (adjust value as needed) */
+}
+
+.label {
+    font-weight: normal;  /* unbold */
+    text-align: right;
+    padding-right: 8px;
+}
+
+.house-header {
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    color: black;
+    font-size: 1.1em;
+    -webkit-text-stroke: 0.7px gray; /* outline for Safari/Chrome */
+    text-stroke: 0.7px gray;         /* outline for others */
+}
+
+
+.labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 40px; /* align with top of houses */
+    margin-right: 10px;
+}
+
+
+.house-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.house {
+    border: 2px solid black;
+    padding: 5px;
+    background-color: lightgray;
+}
+
+h1 {
+    margin-top: 100px;   /* push title down */
+    margin-bottom: 30px;
+    text-align: center; /* center title */
+}
+
+h2 {
+    text-align: center;
+    margin-top: 35px;
+    margin-bottom: 30px;
+    font-size: 1.5em;
+}
+
+
+
+/* Firework particle */
+.firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: red;
+    animation: explode 3s ease-out forwards;
+}
+
+@keyframes explode {
+    from { transform: scale(1) translate(0,0); opacity: 1; }
+    to   { transform: scale(0.5) translate(var(--dx), var(--dy)); opacity: 0; }
+}
+

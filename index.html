@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Einstein's Riddle Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+
+    
+<body>
+
+    <h1>Einstein's Riddle Demo</h1>
+
+    <div class="houses-grid">
+        <!-- Header row -->
+        <div class="label"></div>
+        {% for i in range(5) %}
+        <div class="house-header" id="house-{{ i }}"><strong>House #{{ i+1 }}</strong></div>
+        {% endfor %}
+
+        <!-- Color row -->
+        <div class="label">Color</div>
+        {% for i in range(5) %}
+        <select id="color-{{ i }}" onchange="updateHouse(this, {{ i }}, 'color')">
+            <option value=""></option>
+            <option>Red</option>
+            <option>Green</option>
+            <option>Blue</option>
+            <option>Yellow</option>
+            <option>White</option>
+        </select>
+        {% endfor %}
+
+        <!-- Nationality row -->
+        <div class="label">Nationality</div>
+        {% for i in range(5) %}
+        <select id="nat-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Brit</option>
+            <option>Swede</option>
+            <option>Dane</option>
+            <option>German</option>
+            <option>Norwegian</option>
+        </select>
+        {% endfor %}
+
+        <!-- Drink row -->
+        <div class="label">Drink</div>
+        {% for i in range(5) %}
+        <select id="drink-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Tea</option>
+            <option>Coffee</option>
+            <option>Milk</option>
+            <option>Beer</option>
+            <option>Water</option>
+        </select>
+        {% endfor %}
+
+        <!-- Cigarette row -->
+        <div class="label">Cigarette</div>
+        {% for i in range(5) %}
+        <select id="cig-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Pall Mall</option>
+            <option>Dunhill</option>
+            <option>Blends</option>
+            <option>Blue Master</option>
+            <option>Prince</option>
+        </select>
+        {% endfor %}
+
+        <!-- Pet row -->
+        <div class="label">Pet</div>
+        {% for i in range(5) %}
+        <select id="pet-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Dog</option>
+            <option>Bird</option>
+            <option>Cat</option>
+            <option>Horse</option>
+            <option>Fish</option>
+        </select>
+        {% endfor %}
+    </div>
+
+
+
+
+
+    <h2>🐟 Who owns the fish?</h2>
+
+
+    <div class="clues-grid">
+        {% for clue in clues %}
+        <div class="clue" id="clue-{{ loop.index0 }}" onclick="toggleClueHighlight({{ loop.index0 }})">
+            <span class="marker"></span>{{ clue }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Fireworks container -->
+    <div id="fireworks"></div>
+
+    
+    <script src="script.js"></script>
+
+</body>
+</html>
+
+
+
+
+
+
