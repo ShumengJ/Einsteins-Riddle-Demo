@@ -1,3 +1,4 @@
+/* ================== UI wiring ================== */
 function updateHouse(select, houseIndex, key) {
   const value = select.value;
   if (key === "color") {
@@ -24,134 +25,62 @@ function getHouses() {
 
 function collectData() {
   const houses = getHouses();
-  const statuses = checkClues(houses);
+  const data = checkClues(houses); // ← pure JS version of your Flask logic
 
-  statuses.forEach((status, idx) => {
+  data.forEach((res, idx) => {
     const el = document.getElementById("clue-" + idx);
     const marker = el.querySelector(".marker");
 
-    // clear previous status classes
     el.classList.remove("satisfied", "conflict");
 
-    if (status === "conflict") {
-      // make sure conflict wins over any manual highlight
-      el.classList.remove("highlight");       
+    if (res.status === "conflict") {
+      el.classList.remove("highlight");     // conflict wins over manual notes
       el.classList.add("conflict");
       marker.textContent = "×";
       marker.style.color = "red";
-    } else if (status === "satisfied") {
-      // satisfied always wins
-      el.classList.remove("highlight");          
+    } else if (res.status === "satisfied") {
+      el.classList.remove("highlight");     // satisfied wins over manual notes
       el.classList.add("satisfied");
       marker.textContent = "✓";
       marker.style.color = "green";
     } else {
-      // neutral
       marker.textContent = "";
       marker.style.color = "";
-      // leave highlight alone (user can toggle it)
+      // keep any manual highlight if present
     }
   });
 
-  const allSatisfied = statuses.every(s => s === "satisfied");
+  const allSatisfied = data.every(x => x.status === "satisfied");
   const noBlanks = houses.every(h => Object.values(h).every(v => v));
   if (allSatisfied && noBlanks) launchFireworks();
 }
 
 function enforceUniqueSelections() {
   ["color", "nat", "drink", "cig", "pet"].forEach(cat => {
-    const selected = [];
+    const picked = [];
     for (let i = 0; i < 5; i++) {
-      const val = document.getElementById(cat + "-" + i).value;
-      if (val) selected.push(val);
+      const v = document.getElementById(cat + "-" + i).value;
+      if (v) picked.push(v);
     }
     for (let i = 0; i < 5; i++) {
-      const dropdown = document.getElementById(cat + "-" + i);
-      const current = dropdown.value;
-      for (const opt of dropdown.options) {
+      const dd = document.getElementById(cat + "-" + i);
+      const cur = dd.value;
+      for (const opt of dd.options) {
         if (opt.value === "") continue;
-        opt.disabled = selected.includes(opt.value) && opt.value !== current;
+        opt.disabled = picked.includes(opt.value) && opt.value !== cur;
       }
     }
   });
 }
 
-/* ========= Pure JS Clue Checker ========= */
-function checkClues(h) {
-  const s = new Array(15).fill("unsatisfied");
-
-  // 0. Brit ↔ Red
-  if (h.some(x => x.nationality === "Brit" && x.color === "Red")) s[0] = "satisfied";
-  else if (h.some(x => x.nationality === "Brit") && h.some(x => x.color === "Red")) s[0] = "conflict";
-
-  // 1. Swede ↔ Dogs
-  if (h.some(x => x.nationality === "Swede" && x.pet === "Dog")) s[1] = "satisfied";
-  else if (h.some(x => x.nationality === "Swede") && h.some(x => x.pet === "Dog")) s[1] = "conflict";
-
-  // 2. Dane ↔ Tea
-  if (h.some(x => x.nationality === "Dane" && x.drink === "Tea")) s[2] = "satisfied";
-  else if (h.some(x => x.nationality === "Dane") && h.some(x => x.drink === "Tea")) s[2] = "conflict";
-
-  // 3. Green immediately left of White
-  for (let i = 0; i < 4; i++) if (h[i].color === "Green" && h[i + 1].color === "White") s[3] = "satisfied";
-  if (s[3] !== "satisfied" && h.some(x => x.color === "Green") && h.some(x => x.color === "White")) s[3] = "conflict";
-
-  // 4. Green ↔ Coffee
-  if (h.some(x => x.color === "Green" && x.drink === "Coffee")) s[4] = "satisfied";
-  else if (h.some(x => x.color === "Green") && h.some(x => x.drink === "Coffee")) s[4] = "conflict";
-
-  // 5. Pall Mall ↔ Birds
-  if (h.some(x => x.cigarette === "Pall Mall" && x.pet === "Bird")) s[5] = "satisfied";
-  else if (h.some(x => x.cigarette === "Pall Mall") && h.some(x => x.pet === "Bird")) s[5] = "conflict";
-
-  // 6. Yellow ↔ Dunhill
-  if (h.some(x => x.color === "Yellow" && x.cigarette === "Dunhill")) s[6] = "satisfied";
-  else if (h.some(x => x.color === "Yellow") && h.some(x => x.cigarette === "Dunhill")) s[6] = "conflict";
-
-  // 7. Center (house #3) ↔ Milk
-  if (h[2].drink === "Milk") s[7] = "satisfied";
-  else if (h.some(x => x.drink === "Milk")) s[7] = "conflict";
-
-  // 8. First house ↔ Norwegian
-  if (h[0].nationality === "Norwegian") s[8] = "satisfied";
-  else if (h.some(x => x.nationality === "Norwegian")) s[8] = "conflict";
-
-  // 9. Blends next to Cats
-  for (let i = 0; i < 5; i++) {
-    if (h[i].cigarette === "Blends" &&
-        ((i > 0 && h[i - 1].pet === "Cat") || (i < 4 && h[i + 1].pet === "Cat"))) s[9] = "satisfied";
-  }
-
-  // 10. Horses next to Dunhill
-  for (let i = 0; i < 5; i++) {
-    if (h[i].pet === "Horse" &&
-        ((i > 0 && h[i - 1].cigarette === "Dunhill") || (i < 4 && h[i + 1].cigarette === "Dunhill"))) s[10] = "satisfied";
-  }
-
-  // 11. Blue Master ↔ Beer
-  if (h.some(x => x.cigarette === "Blue Master" && x.drink === "Beer")) s[11] = "satisfied";
-  else if (h.some(x => x.cigarette === "Blue Master") && h.some(x => x.drink === "Beer")) s[11] = "conflict";
-
-  // 12. German ↔ Prince
-  if (h.some(x => x.nationality === "German" && x.cigarette === "Prince")) s[12] = "satisfied";
-  else if (h.some(x => x.nationality === "German") && h.some(x => x.cigarette === "Prince")) s[12] = "conflict";
-
-  // 13. Norwegian next to Blue
-  for (let i = 0; i < 4; i++) {
-    if (h[i].nationality === "Norwegian" && h[i + 1].color === "Blue") s[13] = "satisfied";
-    if (h[i + 1].nationality === "Norwegian" && h[i].color === "Blue") s[13] = "satisfied";
-  }
-
-  // 14. Blends next to Water
-  for (let i = 0; i < 5; i++) {
-    if (h[i].cigarette === "Blends" &&
-        ((i > 0 && h[i - 1].drink === "Water") || (i < 4 && h[i + 1].drink === "Water"))) s[14] = "satisfied";
-  }
-
-  return s;
+function toggleClueHighlight(idx) {
+  const el = document.getElementById("clue-" + idx);
+  if (el.classList.contains("satisfied")) return;
+  if (el.classList.contains("conflict")) return;
+  el.classList.toggle("highlight");
 }
 
-/* ========= Fireworks ========= */
+/* ================== Fireworks ================== */
 function launchFireworks() {
   const container = document.getElementById("fireworks");
   container.innerHTML = "";
@@ -159,10 +88,10 @@ function launchFireworks() {
 
   const burstCount = 5;     // total bursts
   const duration = 3000;    // particle lifetime (ms)
-  const interval = 500;     // start bursts this far apart (overlap)
+  const interval = 500;     // overlap between bursts
 
   function createBurst() {
-    for (let b = 0; b < 17; b++) {  // 17 random origins
+    for (let b = 0; b < 10; b++) {  // 10 random origins
       const originX = Math.random() * window.innerWidth;
       const originY = Math.random() * window.innerHeight * 0.7;
 
@@ -191,10 +120,201 @@ function launchFireworks() {
   }, burstCount * interval + duration);
 }
 
-/* ========= Click-to-highlight (notes) ========= */
-function toggleClueHighlight(idx) {
-  const el = document.getElementById("clue-" + idx);
-  if (el.classList.contains("satisfied")) return; // don't let notes override satisfied
-  if (el.classList.contains("conflict")) return;  // also don't let notes override conflict
-  el.classList.toggle("highlight");
+/* ================== Flask logic port ================== */
+/* Helpers */
+function findIndex(houses, key, value) {
+  for (let i = 0; i < houses.length; i++) {
+    if (houses[i][key] === value) return i;
+  }
+  return null;
+}
+function valAt(houses, i, key) {
+  if (i < 0 || i >= houses.length) return null;
+  return houses[i][key] || null;
+}
+
+/* Same-house constraint: (k1==v1) <-> (k2==v2) */
+function check_pair(h, k1, v1, k2, v2) {
+  const i1 = findIndex(h, k1, v1);
+  const i2 = findIndex(h, k2, v2);
+
+  if (i1 !== null && i2 !== null) {
+    return (i1 === i2) ? "satisfied" : "conflict";
+  }
+
+  if (i1 !== null) {
+    const v2at = valAt(h, i1, k2);
+    if (v2at && v2at !== v2) return "conflict";
+    if (i2 !== null && i2 !== i1) {
+      const v1there = valAt(h, i2, k1);
+      if (v1there && v1there !== v1) return "conflict";
+    }
+    return "unsatisfied";
+  }
+
+  if (i2 !== null) {
+    const v1at = valAt(h, i2, k1);
+    if (v1at && v1at !== v1) return "conflict";
+    if (i1 !== null && i1 !== i2) {
+      const v2there = valAt(h, i1, k2);
+      if (v2there && v2there !== v2) return "conflict";
+    }
+    return "unsatisfied";
+  }
+
+  return "unsatisfied";
+}
+
+/* Centre house must have (key==value) */
+function check_center(h, key, value, centerIdx = 2) {
+  const v = valAt(h, centerIdx, key);
+  if (v === value) return "satisfied";
+  if (v && v !== value) return "conflict"; // center has a different value → conflict
+  // if any other house already has that value → center can't have it later
+  for (let i = 0; i < h.length; i++) {
+    if (i === centerIdx) continue;
+    if (valAt(h, i, key) === value) return "conflict";
+  }
+  return "unsatisfied";
+}
+
+/* First (left-most) house must have (key==value) */
+function check_first(h, key, value) {
+  const v = valAt(h, 0, key);
+  if (v === value) return "satisfied";
+  if (v && v !== value) return "conflict"; // first already set to different value → conflict
+  for (let i = 1; i < h.length; i++) {
+    if (valAt(h, i, key) === value) return "conflict"; // value appears elsewhere → conflict
+  }
+  return "unsatisfied";
+}
+
+/* Next-to constraint: (k1==v1) next to (k2==v2) */
+function check_next_to(h, k1, v1, k2, v2) {
+  const N = h.length;
+  const i1 = findIndex(h, k1, v1);
+  const i2 = findIndex(h, k2, v2);
+
+  if (i1 !== null && i2 !== null) {
+    return (Math.abs(i1 - i2) === 1) ? "satisfied" : "conflict";
+  }
+
+  if (i1 !== null) {
+    const L = (i1 > 0) ? i1 - 1 : null;
+    const R = (i1 < N - 1) ? i1 + 1 : null;
+
+    if ((L !== null && valAt(h, L, k2) === v2) || (R !== null && valAt(h, R, k2) === v2)) {
+      return "satisfied";
+    }
+    if (i2 !== null && Math.abs(i1 - i2) !== 1) return "conflict";
+
+    const leftBlock  = (L !== null && valAt(h, L, k2) && valAt(h, L, k2) !== v2);
+    const rightBlock = (R !== null && valAt(h, R, k2) && valAt(h, R, k2) !== v2);
+    if ((L === null && rightBlock) || (R === null && leftBlock) || (leftBlock && rightBlock)) {
+      return "conflict";
+    }
+    return "unsatisfied";
+  }
+
+  if (i2 !== null) {
+    const L = (i2 > 0) ? i2 - 1 : null;
+    const R = (i2 < N - 1) ? i2 + 1 : null;
+
+    if ((L !== null && valAt(h, L, k1) === v1) || (R !== null && valAt(h, R, k1) === v1)) {
+      return "satisfied";
+    }
+    if (i1 !== null && Math.abs(i1 - i2) !== 1) return "conflict";
+
+    const leftBlock  = (L !== null && valAt(h, L, k1) && valAt(h, L, k1) !== v1);
+    const rightBlock = (R !== null && valAt(h, R, k1) && valAt(h, R, k1) !== v1);
+    if ((L === null && rightBlock) || (R === null && leftBlock) || (leftBlock && rightBlock)) {
+      return "conflict";
+    }
+    return "unsatisfied";
+  }
+
+  return "unsatisfied";
+}
+
+/* Exactly-left-of constraint: (kL==vL) immediately left of (kR==vR) */
+function check_exact_left_of(h, kL, vL, kR, vR) {
+  const N = h.length;
+  const iL = findIndex(h, kL, vL);
+  const iR = findIndex(h, kR, vR);
+
+  if (iL !== null && iR !== null) {
+    return (iL + 1 === iR) ? "satisfied" : "conflict";
+  }
+
+  if (iL !== null) {
+    if (iL === N - 1) return "conflict"; // left item cannot be at far right
+    const rightIdx = iL + 1;
+    const vRight = valAt(h, rightIdx, kR);
+    if (vRight && vRight !== vR) return "conflict";
+    if (iR !== null && iR !== rightIdx) return "conflict";
+    return "unsatisfied";
+  }
+
+  if (iR !== null) {
+    if (iR === 0) return "conflict"; // right item cannot be at far left
+    const leftIdx = iR - 1;
+    const vLeft = valAt(h, leftIdx, kL);
+    if (vLeft && vLeft !== vL) return "conflict";
+    if (iL !== null && iL !== leftIdx) return "conflict";
+    return "unsatisfied";
+  }
+
+  return "unsatisfied";
+}
+
+/* Master evaluator: mirrors your Python app.py */
+function checkClues(h) {
+  const results = [];
+
+  // 0
+  results.push({ status: check_pair(h, "nationality", "Brit", "color", "Red") });
+
+  // 1 (Dogs vs Dog singular)
+  results.push({ status: check_pair(h, "nationality", "Swede", "pet", "Dog") });
+
+  // 2
+  results.push({ status: check_pair(h, "nationality", "Dane", "drink", "Tea") });
+
+  // 3
+  results.push({ status: check_exact_left_of(h, "color", "Green", "color", "White") });
+
+  // 4
+  results.push({ status: check_pair(h, "color", "Green", "drink", "Coffee") });
+
+  // 5 (Birds vs Bird singular)
+  results.push({ status: check_pair(h, "cigarette", "Pall Mall", "pet", "Bird") });
+
+  // 6
+  results.push({ status: check_pair(h, "color", "Yellow", "cigarette", "Dunhill") });
+
+  // 7 center house drinks Milk (index 2)
+  results.push({ status: check_center(h, "drink", "Milk", 2) });
+
+  // 8 first house is Norwegian
+  results.push({ status: check_first(h, "nationality", "Norwegian") });
+
+  // 9 Blends next to Cats
+  results.push({ status: check_next_to(h, "cigarette", "Blends", "pet", "Cat") });
+
+  // 10 Horses next to Dunhill
+  results.push({ status: check_next_to(h, "pet", "Horse", "cigarette", "Dunhill") });
+
+  // 11 Blue Master ↔ Beer
+  results.push({ status: check_pair(h, "cigarette", "Blue Master", "drink", "Beer") });
+
+  // 12 German ↔ Prince
+  results.push({ status: check_pair(h, "nationality", "German", "cigarette", "Prince") });
+
+  // 13 Norwegian next to Blue house
+  results.push({ status: check_next_to(h, "nationality", "Norwegian", "color", "Blue") });
+
+  // 14 Blends next to Water
+  results.push({ status: check_next_to(h, "cigarette", "Blends", "drink", "Water") });
+
+  return results;
 }
