@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Einstein's Riddle Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+
+
+
+
+    <script>
+        function updateHouse(select, houseIndex, key) {
+            let value = select.value;
+            if (key === "color") {
+                let houseHeader = document.getElementById("house-" + houseIndex);
+                if (value) {
+                    houseHeader.style.color = value.toLowerCase();
+                } else {
+                    houseHeader.style.color = "black"; // reset to default
+                }
+            }
+            collectData();
+            enforceUniqueSelections();
+        }
+
+        function collectData() {
+            let houses = [];
+            for (let i = 0; i < 5; i++) {
+                let color = document.getElementById("color-" + i).value;
+                let nationality = document.getElementById("nat-" + i).value;
+                let drink = document.getElementById("drink-" + i).value;
+                let cigarette = document.getElementById("cig-" + i).value;
+                let pet = document.getElementById("pet-" + i).value;
+                houses.push({color, nationality, drink, cigarette, pet});
+            }
+
+            fetch("/check_clues", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({houses: houses})
+            })
+            .then(response => response.json())
+            .then(data => {
+                data.forEach((res, idx) => {
+                    const el = document.getElementById("clue-" + idx);
+                    const marker = el.querySelector(".marker");
+
+                    // remove previous status classes
+                    el.classList.remove("satisfied", "conflict");
+
+                    if (res.status === "conflict") {
+                        el.classList.add("conflict");
+                        marker.textContent = "×";
+                        marker.style.color = "red";
+                    } else if (res.status === "satisfied") {
+                        el.classList.add("satisfied");
+                        el.classList.remove("highlight");   // drop manual highlight
+                        // safety: clear old inline overrides if you had them
+                        el.style.color = "";
+                        el.style.fontWeight = "";
+                        marker.textContent = "✓";
+                        marker.style.color = "green";
+                    } else {
+                        // unsatisfied
+                        marker.textContent = "";
+                        marker.style.color = "";
+                    }
+                });
+
+
+
+
+                // check if puzzle is solved
+                let allSatisfied = data.every(res => res.status === "satisfied");
+
+                // check if no blanks left
+                let noBlanks = true;
+                for (let i = 0; i < 5; i++) {
+                    if (!document.getElementById("color-" + i).value ||
+                        !document.getElementById("nat-" + i).value ||
+                        !document.getElementById("drink-" + i).value ||
+                        !document.getElementById("cig-" + i).value ||
+                        !document.getElementById("pet-" + i).value) {
+                        noBlanks = false;
+                        break;
+                    }
+                }
+
+                if (allSatisfied && noBlanks) {
+                    launchFireworks();
+                }
+            });
+        }
+
+
+
+
+        function enforceUniqueSelections() {
+            let categories = ["color", "nat", "drink", "cig", "pet"];
+
+            categories.forEach(cat => {
+                let selectedValues = [];
+                // collect all chosen values for this category
+                for (let i = 0; i < 5; i++) {
+                    let val = document.getElementById(cat + "-" + i).value;
+                    if (val) selectedValues.push(val);
+                }
+
+                // disable selected options in other dropdowns
+                for (let i = 0; i < 5; i++) {
+                    let dropdown = document.getElementById(cat + "-" + i);
+                    let currentVal = dropdown.value;
+                    for (let opt of dropdown.options) {
+                        if (opt.value === "") continue;
+                        // disable if picked by another house
+                        if (selectedValues.includes(opt.value) && opt.value !== currentVal) {
+                            opt.disabled = true;
+                        } else {
+                            opt.disabled = false;
+                        }
+                    }
+                }
+            });
+        }
+
+
+        function launchFireworks() {
+            const container = document.getElementById("fireworks");
+            container.innerHTML = "";
+            container.style.display = "block";
+
+            let burstCount = 5;      // total bursts
+            let duration = 3000;     // particle lifetime (ms)
+            let interval = 500;     // time between bursts (ms) → overlap
+
+            function createBurst() {
+                for (let b = 0; b < 17; b++) {  // 10 random origin points
+                    let originX = Math.random() * window.innerWidth;
+                    let originY = Math.random() * window.innerHeight * 0.7;
+
+                    for (let i = 0; i < 40; i++) {
+                        let f = document.createElement("div");
+                        f.className = "firework";
+
+                        let angle = Math.random() * 2 * Math.PI;
+                        let distance = Math.random() * 250 + 50;
+                        f.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+                        f.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+
+                        f.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
+                        f.style.left = originX + "px";
+                        f.style.top = originY + "px";
+
+                        container.appendChild(f);
+                    }
+                }
+            }
+
+            // Sequential bursts with overlap
+            for (let n = 0; n < burstCount; n++) {
+                setTimeout(() => {
+                    createBurst();
+                }, n * interval);
+            }
+
+            // Final cleanup after last particles fade out
+            setTimeout(() => {
+                container.style.display = "none";
+                container.innerHTML = "";
+            }, burstCount * interval + duration);
+        }
+
+
+        function toggleClueHighlight(idx) {
+            const el = document.getElementById("clue-" + idx);
+            if (el.classList.contains("satisfied")) return; // don't allow on satisfied
+            el.classList.toggle("highlight");
+        }
+
+    </script>
+
+
+
+
+
+
+</head>
+<body>
+
+    <h1>Einstein's Riddle Demo</h1>
+
+    <div class="houses-grid">
+        <!-- Header row -->
+        <div class="label"></div>
+        {% for i in range(5) %}
+        <div class="house-header" id="house-{{ i }}"><strong>House #{{ i+1 }}</strong></div>
+        {% endfor %}
+
+        <!-- Color row -->
+        <div class="label">Color</div>
+        {% for i in range(5) %}
+        <select id="color-{{ i }}" onchange="updateHouse(this, {{ i }}, 'color')">
+            <option value=""></option>
+            <option>Red</option>
+            <option>Green</option>
+            <option>Blue</option>
+            <option>Yellow</option>
+            <option>White</option>
+        </select>
+        {% endfor %}
+
+        <!-- Nationality row -->
+        <div class="label">Nationality</div>
+        {% for i in range(5) %}
+        <select id="nat-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Brit</option>
+            <option>Swede</option>
+            <option>Dane</option>
+            <option>German</option>
+            <option>Norwegian</option>
+        </select>
+        {% endfor %}
+
+        <!-- Drink row -->
+        <div class="label">Drink</div>
+        {% for i in range(5) %}
+        <select id="drink-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Tea</option>
+            <option>Coffee</option>
+            <option>Milk</option>
+            <option>Beer</option>
+            <option>Water</option>
+        </select>
+        {% endfor %}
+
+        <!-- Cigarette row -->
+        <div class="label">Cigarette</div>
+        {% for i in range(5) %}
+        <select id="cig-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Pall Mall</option>
+            <option>Dunhill</option>
+            <option>Blends</option>
+            <option>Blue Master</option>
+            <option>Prince</option>
+        </select>
+        {% endfor %}
+
+        <!-- Pet row -->
+        <div class="label">Pet</div>
+        {% for i in range(5) %}
+        <select id="pet-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
+            <option value=""></option>
+            <option>Dog</option>
+            <option>Bird</option>
+            <option>Cat</option>
+            <option>Horse</option>
+            <option>Fish</option>
+        </select>
+        {% endfor %}
+    </div>
+
+
+
+
+
+    <h2>🐟 Who owns the fish?</h2>
+
+
+    <div class="clues-grid">
+        {% for clue in clues %}
+        <div class="clue" id="clue-{{ loop.index0 }}" onclick="toggleClueHighlight({{ loop.index0 }})">
+            <span class="marker"></span>{{ clue }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Fireworks container -->
+    <div id="fireworks"></div>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
