@@ -1,115 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Einstein's Riddle Demo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Einstein's Riddle Demo</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
-    
 <body>
+  <h1>Einstein's Riddle Demo</h1>
 
-    <h1>Einstein's Riddle Demo</h1>
+  <div class="houses-grid">
+    <!-- Header row -->
+    <div class="label"></div>
+    <div class="house-header" id="house-0"><strong>House #1</strong></div>
+    <div class="house-header" id="house-1"><strong>House #2</strong></div>
+    <div class="house-header" id="house-2"><strong>House #3</strong></div>
+    <div class="house-header" id="house-3"><strong>House #4</strong></div>
+    <div class="house-header" id="house-4"><strong>House #5</strong></div>
 
-    <div class="houses-grid">
-        <!-- Header row -->
-        <div class="label"></div>
-        {% for i in range(5) %}
-        <div class="house-header" id="house-{{ i }}"><strong>House #{{ i+1 }}</strong></div>
-        {% endfor %}
+    <!-- Color row -->
+    <div class="label">Color</div>
+    <select id="color-0" onchange="updateHouse(this,0,'color')"><option></option><option>Red</option><option>Green</option><option>Blue</option><option>Yellow</option><option>White</option></select>
+    <select id="color-1" onchange="updateHouse(this,1,'color')"><option></option><option>Red</option><option>Green</option><option>Blue</option><option>Yellow</option><option>White</option></select>
+    <select id="color-2" onchange="updateHouse(this,2,'color')"><option></option><option>Red</option><option>Green</option><option>Blue</option><option>Yellow</option><option>White</option></select>
+    <select id="color-3" onchange="updateHouse(this,3,'color')"><option></option><option>Red</option><option>Green</option><option>Blue</option><option>Yellow</option><option>White</option></select>
+    <select id="color-4" onchange="updateHouse(this,4,'color')"><option></option><option>Red</option><option>Green</option><option>Blue</option><option>Yellow</option><option>White</option></select>
 
-        <!-- Color row -->
-        <div class="label">Color</div>
-        {% for i in range(5) %}
-        <select id="color-{{ i }}" onchange="updateHouse(this, {{ i }}, 'color')">
-            <option value=""></option>
-            <option>Red</option>
-            <option>Green</option>
-            <option>Blue</option>
-            <option>Yellow</option>
-            <option>White</option>
-        </select>
-        {% endfor %}
+    <!-- Nationality row -->
+    <div class="label">Nationality</div>
+    <select id="nat-0" onchange="collectData();enforceUniqueSelections();"><option></option><option>Brit</option><option>Swede</option><option>Dane</option><option>German</option><option>Norwegian</option></select>
+    <select id="nat-1" onchange="collectData();enforceUniqueSelections();"><option></option><option>Brit</option><option>Swede</option><option>Dane</option><option>German</option><option>Norwegian</option></select>
+    <select id="nat-2" onchange="collectData();enforceUniqueSelections();"><option></option><option>Brit</option><option>Swede</option><option>Dane</option><option>German</option><option>Norwegian</option></select>
+    <select id="nat-3" onchange="collectData();enforceUniqueSelections();"><option></option><option>Brit</option><option>Swede</option><option>Dane</option><option>German</option><option>Norwegian</option></select>
+    <select id="nat-4" onchange="collectData();enforceUniqueSelections();"><option></option><option>Brit</option><option>Swede</option><option>Dane</option><option>German</option><option>Norwegian</option></select>
 
-        <!-- Nationality row -->
-        <div class="label">Nationality</div>
-        {% for i in range(5) %}
-        <select id="nat-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
-            <option value=""></option>
-            <option>Brit</option>
-            <option>Swede</option>
-            <option>Dane</option>
-            <option>German</option>
-            <option>Norwegian</option>
-        </select>
-        {% endfor %}
+    <!-- Drink row -->
+    <div class="label">Drink</div>
+    <select id="drink-0" onchange="collectData();enforceUniqueSelections();"><option></option><option>Tea</option><option>Coffee</option><option>Milk</option><option>Beer</option><option>Water</option></select>
+    <select id="drink-1" onchange="collectData();enforceUniqueSelections();"><option></option><option>Tea</option><option>Coffee</option><option>Milk</option><option>Beer</option><option>Water</option></select>
+    <select id="drink-2" onchange="collectData();enforceUniqueSelections();"><option></option><option>Tea</option><option>Coffee</option><option>Milk</option><option>Beer</option><option>Water</option></select>
+    <select id="drink-3" onchange="collectData();enforceUniqueSelections();"><option></option><option>Tea</option><option>Coffee</option><option>Milk</option><option>Beer</option><option>Water</option></select>
+    <select id="drink-4" onchange="collectData();enforceUniqueSelections();"><option></option><option>Tea</option><option>Coffee</option><option>Milk</option><option>Beer</option><option>Water</option></select>
 
-        <!-- Drink row -->
-        <div class="label">Drink</div>
-        {% for i in range(5) %}
-        <select id="drink-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
-            <option value=""></option>
-            <option>Tea</option>
-            <option>Coffee</option>
-            <option>Milk</option>
-            <option>Beer</option>
-            <option>Water</option>
-        </select>
-        {% endfor %}
+    <!-- Cigarette row -->
+    <div class="label">Cigarette</div>
+    <select id="cig-0" onchange="collectData();enforceUniqueSelections();"><option></option><option>Pall Mall</option><option>Dunhill</option><option>Blends</option><option>Blue Master</option><option>Prince</option></select>
+    <select id="cig-1" onchange="collectData();enforceUniqueSelections();"><option></option><option>Pall Mall</option><option>Dunhill</option><option>Blends</option><option>Blue Master</option><option>Prince</option></select>
+    <select id="cig-2" onchange="collectData();enforceUniqueSelections();"><option></option><option>Pall Mall</option><option>Dunhill</option><option>Blends</option><option>Blue Master</option><option>Prince</option></select>
+    <select id="cig-3" onchange="collectData();enforceUniqueSelections();"><option></option><option>Pall Mall</option><option>Dunhill</option><option>Blends</option><option>Blue Master</option><option>Prince</option></select>
+    <select id="cig-4" onchange="collectData();enforceUniqueSelections();"><option></option><option>Pall Mall</option><option>Dunhill</option><option>Blends</option><option>Blue Master</option><option>Prince</option></select>
 
-        <!-- Cigarette row -->
-        <div class="label">Cigarette</div>
-        {% for i in range(5) %}
-        <select id="cig-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
-            <option value=""></option>
-            <option>Pall Mall</option>
-            <option>Dunhill</option>
-            <option>Blends</option>
-            <option>Blue Master</option>
-            <option>Prince</option>
-        </select>
-        {% endfor %}
+    <!-- Pet row -->
+    <div class="label">Pet</div>
+    <select id="pet-0" onchange="collectData();enforceUniqueSelections();"><option></option><option>Dog</option><option>Bird</option><option>Cat</option><option>Horse</option><option>Fish</option></select>
+    <select id="pet-1" onchange="collectData();enforceUniqueSelections();"><option></option><option>Dog</option><option>Bird</option><option>Cat</option><option>Horse</option><option>Fish</option></select>
+    <select id="pet-2" onchange="collectData();enforceUniqueSelections();"><option></option><option>Dog</option><option>Bird</option><option>Cat</option><option>Horse</option><option>Fish</option></select>
+    <select id="pet-3" onchange="collectData();enforceUniqueSelections();"><option></option><option>Dog</option><option>Bird</option><option>Cat</option><option>Horse</option><option>Fish</option></select>
+    <select id="pet-4" onchange="collectData();enforceUniqueSelections();"><option></option><option>Dog</option><option>Bird</option><option>Cat</option><option>Horse</option><option>Fish</option></select>
+  </div>
 
-        <!-- Pet row -->
-        <div class="label">Pet</div>
-        {% for i in range(5) %}
-        <select id="pet-{{ i }}" onchange="collectData(); enforceUniqueSelections();">
-            <option value=""></option>
-            <option>Dog</option>
-            <option>Bird</option>
-            <option>Cat</option>
-            <option>Horse</option>
-            <option>Fish</option>
-        </select>
-        {% endfor %}
-    </div>
+  <h2>🐟 Who owns the fish?</h2>
+  <div class="clues-grid">
+    <div class="clue" id="clue-0" onclick="toggleClueHighlight(0)"><span class="marker"></span>The Brit lives in the Red house.</div>
+    <div class="clue" id="clue-1" onclick="toggleClueHighlight(1)"><span class="marker"></span>The Swede keeps Dogs as pets.</div>
+    <div class="clue" id="clue-2" onclick="toggleClueHighlight(2)"><span class="marker"></span>The Dane drinks Tea.</div>
+    <div class="clue" id="clue-3" onclick="toggleClueHighlight(3)"><span class="marker"></span>The Green house is exactly to the left of the White house.</div>
+    <div class="clue" id="clue-4" onclick="toggleClueHighlight(4)"><span class="marker"></span>The owner of the Green house drinks Coffee.</div>
+    <div class="clue" id="clue-5" onclick="toggleClueHighlight(5)"><span class="marker"></span>The person who smokes Pall Mall rears Birds.</div>
+    <div class="clue" id="clue-6" onclick="toggleClueHighlight(6)"><span class="marker"></span>The owner of the Yellow house smokes Dunhill.</div>
+    <div class="clue" id="clue-7" onclick="toggleClueHighlight(7)"><span class="marker"></span>The man living in the centre house drinks Milk.</div>
+    <div class="clue" id="clue-8" onclick="toggleClueHighlight(8)"><span class="marker"></span>The Norwegian lives in the first house.</div>
+    <div class="clue" id="clue-9" onclick="toggleClueHighlight(9)"><span class="marker"></span>The man who smokes Blends lives next to the one who keeps Cats.</div>
+    <div class="clue" id="clue-10" onclick="toggleClueHighlight(10)"><span class="marker"></span>The man who keeps Horses lives next to the man who smokes Dunhill.</div>
+    <div class="clue" id="clue-11" onclick="toggleClueHighlight(11)"><span class="marker"></span>The man who smokes Blue Master drinks Beer.</div>
+    <div class="clue" id="clue-12" onclick="toggleClueHighlight(12)"><span class="marker"></span>The German smokes Prince.</div>
+    <div class="clue" id="clue-13" onclick="toggleClueHighlight(13)"><span class="marker"></span>The Norwegian lives next to the Blue house.</div>
+    <div class="clue" id="clue-14" onclick="toggleClueHighlight(14)"><span class="marker"></span>The man who smokes Blends has a neighbour who drinks Water.</div>
+  </div>
 
+  <!-- Fireworks container -->
+  <div id="fireworks"></div>
 
-
-
-
-    <h2>🐟 Who owns the fish?</h2>
-
-
-    <div class="clues-grid">
-        {% for clue in clues %}
-        <div class="clue" id="clue-{{ loop.index0 }}" onclick="toggleClueHighlight({{ loop.index0 }})">
-            <span class="marker"></span>{{ clue }}
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Fireworks container -->
-    <div id="fireworks"></div>
-
-    
-    <script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
